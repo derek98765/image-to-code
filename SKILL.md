@@ -1,107 +1,134 @@
 ---
 name: image-to-code
-description: Build a website or app screen in code so it matches design images the user has approved, then screenshot the result and fix the differences. Reads design/<name>/approved/ (from generate-concept-ui) or any images the user hands over — Figma exports, screenshots, other tools. Use when the user says "code this design", "build these approved images", "turn this mockup into a page", or "make it match the image". It does not invent designs or draw new ones.
+description: Build a UI in the project's code from a reference UI image, using only the project's existing design tokens and components, then compare the result with the image and fix the differences. The reference can be a generated concept UI, a Mobbin screen, or a screenshot of an existing site. Use when the user says "code this design", "build this screen from the image", "turn this mockup into a page", "make it match the image", or hands over a UI image to implement. Never invents tokens, components or content. Illustrations and photos become placeholder boxes.
 ---
 
 # image-to-code
 
-You turn approved design images into code that looks the same. The images are the
-spec. Your job is to copy them faithfully, not to improve them.
+Turn a reference UI image into code that looks like it, built from the project's
+own tokens and components. The image is the only source of what to build. The
+project is the only source of how to build it.
 
-## The 5 mistakes to avoid
+**Never add things or make up information that is not in the image.** No extra
+sections, labels, badges, cards, copy, icons or states. If it is not in the
+image, it is not in the page.
 
-These are the most common ways code drifts from the image. Check for them at every
-step.
+## Step 1 — Get the reference
 
-1. **Drifting into a generic template.** Distinctive sections become plain rows,
-   strong type becomes default headings. Keep what makes the design look the way it
-   does.
-2. **Tighter spacing than the image.** Code tends to shrink gaps and padding. Match
-   the image's space, even when it feels generous.
-3. **Adding things that are not in the image.** No extra pills, labels, badges,
-   cards, wrappers or sections. No boxes inside boxes.
-4. **Guessing instead of asking.** When the image is unclear, ask. Do not fill the
-   gap with a default.
-5. **Not checking the result.** Code is not done until a screenshot has been
-   compared with the image.
+- The user provides the image(s): a concept UI, a Mobbin reference, a screenshot
+  of an existing site, or anything similar.
+- No image → stop and ask. Do not draw one.
+- Several images (a flow or a long page) → treat each as one screen or section
+  and build them in the given order.
+- Note the target: web or mobile, and the width the image was captured at. Build
+  in the project's stack and routing. Ask only if the target is truly unclear.
 
-## Step 1 — Find the inputs
+## Step 2 — Study the image
 
-- Look for `design/<name>/approved/` and `approved/design-spec.md`.
-- If the user gave images some other way, use those.
-- No approved images → stop and ask. Do not draw your own; drawing is
-  `generate-concept-ui`'s job and the user must approve first.
-- No `design-spec.md` → write one from the images (palette with hex, fonts, type
-  sizes, spacing, radius, buttons, section order) and show it to the user before
-  coding.
+Look at the image closely and write notes before touching code. Cover every tiny
+detail. For each screen or section, record:
 
-Also read the project: its stack, existing tokens, shared components and styling
-approach. Code goes in the project's stack. For mobile images, use the project's
-mobile stack; if there is none, ask whether to build responsive web or something
-else.
+- **Layout:** grid and columns, alignment, section order, content width, image
+  aspect ratios, what sits side by side and what stacks.
+- **Text:** every string, word for word. Where text is unreadable or garbled,
+  mark it and ask in Step 3.
+- **Type:** font family style (serif, sans, mono), size steps, weights, line
+  height, letter spacing, case, color per text level.
+- **Color:** page background, surfaces, text levels, accent, borders, dividers,
+  overlays, gradients. Estimate as hex.
+- **Spacing:** gutters, section top and bottom space, gaps between elements,
+  card padding, space between a heading and what follows.
+- **Shape:** corner radius per element, border width and style, button and
+  input heights.
+- **Effects:** drop shadows (offset, blur, spread, opacity), inner shadows,
+  blurs, overlays, opacity, hover or active looks if shown.
+- **Components:** every repeated or recognizable part (nav, buttons, inputs,
+  cards, tabs, badges, list rows, modals) and their variants.
+- **Icons:** which icons appear, their size and stroke weight.
+- **Images:** every illustration, photo, graphic or background image: position,
+  size, aspect ratio, whether it is cropped or full-bleed.
 
-## Step 2 — Study each image
+Estimates are fine, since the next step maps them onto the project's scale.
+Rough numbers that fit a scale beat exact guesses.
 
-Treat each image as a spec, not a mood. For every image write short notes:
+## Step 3 — Read the project and map the image onto it
 
-- **Text:** headline, subheadline, buttons, section titles, nav, labels — word for
-  word where readable.
-- **Type:** size steps, weights, line count, line height, tracking, serif or sans,
-  display vs body.
-- **Spacing:** headline to subheadline, text to buttons, card gaps, card padding,
-  side gutters, section top and bottom space.
-- **Buttons and parts:** size, shape, radius, fill or outline, icons, primary vs
-  secondary, borders, dividers, shadows, inputs.
-- **Color:** background, surfaces, text levels, accent, borders, image tint,
-  gradients — as hex.
-- **Layout:** grid, columns, alignment, image ratios, section order.
-- **Unclear:** anything you cannot read or measure.
+First read what the project already has: design tokens (CSS variables, theme
+file, Tailwind config), the type scale, spacing scale, radius, shadows, colors,
+and the shared components and how they are used. Then for each thing in your
+notes, find the **closest existing match**:
 
-The goal is the right spacing and type logic, not exact pixel guesses. Map what you
-see onto a consistent scale.
+| In the image | Use |
+|---|---|
+| A color | The nearest existing color token |
+| A font size, weight, line height | The nearest existing type token or text style |
+| A gap, padding, margin | The nearest existing spacing token |
+| A radius, border, shadow | The nearest existing token |
+| A button, input, card, nav, etc. | The existing component and its closest variant |
 
-## Step 3 — Clear up what is unclear
+Rules:
 
-Collect every unclear point and ask the user in one message. Common ones:
+- **Do not invent new tokens or components.** Stay consistent with the project,
+  even if the match is a little off the image.
+- If a value has no close match, or a component does not exist, still build the
+  screen using the nearest available option. Do not stop, do not hardcode a
+  one-off value, and do not create a new token or component.
+- Keep a running **flag list** of every case where you used a stand-in or where
+  you think a new token or component is warranted. Each entry says what the
+  image shows, what you used instead, and what you suggest adding.
+- Prefer reusing an existing component over rebuilding it, even if the image
+  shows slight differences. Compose with the project's own layout conventions.
 
-- **Garbled text.** Image models mangle text. Propose the copy you think was meant
-  and let the user confirm.
-- **A detail too small to read.** Ask whether to request a closer image from
-  `generate-concept-ui`. Never crop and zoom the approved image.
-- **Images inside the design** (photos, illustrations). Ask whether to make them
-  with `image-gen`, use the user's own assets, or use placeholders for now.
-- **Missing states and sizes:** hover, menus, empty states, tablet and phone widths.
-  Propose a choice that fits the design and say what you decided.
-
-If something is minor and the user has said to go ahead, resolve it in this order:
-keep the visible design language → keep the layout and spacing logic → keep the
-component family → pick the simplest faithful version. Never fall back to a generic
-default.
+Ask the user one batched question only for things you cannot resolve yourself:
+unreadable text, a detail you cannot make out, or a target that is unclear. A
+small, minor unknown does not need asking. Use your best read and note it in the
+final report.
 
 ## Step 4 — Build
 
-- Build section by section, in the image's order.
-- Use the project's existing tokens and components when they match the image. When
-  they do not, match the image and tell the user what differs from the project.
-- Put the spec values (colors, type scale, spacing, radius) in one place, such as
-  CSS variables or the theme file, not scattered literals.
-- Use the confirmed copy, not the garbled image text.
-- For screen sizes without an approved image, keep the same design language and use
-  the `responsive-design` skill's approach.
+- Build in the image's order, section by section, using the project's tokens and
+  components from the Step 3 mapping.
+- Use the text from the image exactly. Keep confirmed corrections for garbled
+  text.
+- **Images and graphics:** do not recreate illustrations, photos, generated art
+  or background images. Put a placeholder box where each one goes, at the same
+  position, size and aspect ratio as in the image. Label it so it is obvious it
+  needs replacing (for example, "Image: hero illustration"). Use the project's
+  neutral surface color and an existing token, not decorative styling.
+- Icons: use the project's icon set. If a needed icon is not in it, use the
+  nearest one and add it to the flag list.
+- Only build states and sizes that are shown in the image. If the image is
+  desktop only, do not invent a mobile layout. Do not add hover states,
+  empty states or extra copy that are not shown.
+- No wrapper elements, boxes inside boxes or decorative additions that the image
+  does not have.
 
-## Step 5 — Compare and fix
+## Step 5 — Compare with the image and adjust
 
-1. Screenshot each section at the image's width with the `browser-screenshot` skill
-   (desktop 1920 for web images, mobile 393 for phone screens).
-2. Put the screenshot and the image side by side and list the differences: layout,
-   spacing, type size and weight, color, radius, missing or extra elements.
-3. Fix them and screenshot again.
-4. Stop after 3 rounds. Report what still differs and why (for example, a
-   browser font that cannot match exactly).
+Once the whole page is built:
 
-## Done
+1. Screenshot the result in the user's real Chrome with the `browser-screenshot`
+   skill, at the same width as the reference image.
+2. Put the screenshot and the reference image side by side. Go through the same
+   checklist as Step 2: layout, text, type, color, spacing, shape, effects,
+   components, icons, image placeholders.
+3. List every visible difference, then fix them using the project's tokens and
+   components. A difference that comes from a stand-in token is already on the
+   flag list. Do not hack around it with a one-off value.
+4. Screenshot again and recheck. Stop after 3 rounds. Report what still differs
+   and why.
 
-Tell the user:
-- what was built and where,
-- the remaining differences from the images,
-- the decisions you made without an image (sizes, states, copy).
+## Step 6 — Report and ask
+
+End with a short report:
+
+- **Built:** what was built and where (files, routes).
+- **Remaining differences:** what still differs from the image and why.
+- **Placeholders:** each image placeholder box that needs a real asset.
+- **Flagged for approval:** the flag list of suggested new tokens or components
+  or stand-ins. For each: what the image shows, what was used instead, and what
+  you suggest adding. Ask the user which ones they approve.
+
+Add nothing from the flag list until the user approves it. After approval, add
+only the approved items, switch the affected code over to them, and re-run
+Step 5 on the affected parts.
