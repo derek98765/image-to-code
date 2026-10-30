@@ -1,6 +1,6 @@
 ---
 name: image-to-code
-description: Build a UI in the project's code from a reference UI image, using only the project's existing design tokens and components, then compare the result with the image and fix the differences. The reference can be a generated concept UI, a Mobbin screen, or a screenshot of an existing site. Use when the user says "code this design", "build this screen from the image", "turn this mockup into a page", "make it match the image", or hands over a UI image to implement. Never invents tokens, components or content. Illustrations and photos become placeholder boxes.
+description: Build the frontend code from a provided reference UI image, using only the project's existing design tokens and components, then compare the result with the image and fix the differences. The reference can be a generated concept UI, a Mobbin screen, or a screenshot of an existing site. Use when the user says "code this design", "build this screen from the image", "turn this mockup into a page", "make it match the image", or hands over a UI image to implement. Never invents tokens, components or content. Illustrations and photos become placeholder boxes.
 ---
 
 # image-to-code
